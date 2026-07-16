@@ -40,6 +40,7 @@ const MAX_LEVELS = 3;
 // ------------------------------------------------------------
 const CARD_W = 160;
 const CARD_H = 220;
+const CARD_Y = 93;
 
 // ------------------------------------------------------------
 // LEVEL DATA
@@ -160,15 +161,16 @@ function loadLevel(num) {
   deckIndex++;
   nextCard = deck[deckIndex] || null;
 
-  // Position buttons below the card
-  let cardX = (width - CARD_W) / 2;
-  let cardY = 120;
+  // Position buttons below the card, centered as an evenly spaced pair
+  let cardY = CARD_Y;
   let btnY = cardY + CARD_H + 30;
-  let gap = 20;
+  let gap = 32;
+  let totalButtonsW = btnHigher.w + btnLower.w + gap;
+  let startX = (width - totalButtonsW) / 2;
 
-  btnHigher.x = cardX - 80;
+  btnHigher.x = startX;
   btnHigher.y = btnY;
-  btnLower.x = cardX + CARD_W - btnLower.w + 80;
+  btnLower.x = startX + btnHigher.w + gap;
   btnLower.y = btnY;
 }
 
@@ -257,7 +259,7 @@ function guess(direction) {
 // ------------------------------------------------------------
 function drawGame() {
   let cardX = (width - CARD_W) / 2;
-  let cardY = 120;
+  let cardY = CARD_Y;
 
   // --- Current card (face up) ---
   drawCard(currentCard, cardX, cardY, true);
@@ -453,18 +455,28 @@ function drawDebugPanel() {
   noStroke();
   rect(0, height - 80, width, 80);
 
-  fill(255, 220, 50);
+  fill(200);
   textSize(11);
-  textAlign(LEFT);
-  text("DEBUG MODE (D to close)", 12, height - 62);
+  textAlign(CENTER);
+  text("DEBUG MODE (D to close)", width / 2, height - 62);
 
-  let buttons = [
-    { label: "S: Start", x: 12 },
-    { label: "1: Level 1", x: 100 },
-    { label: "2: Level 2", x: 200 },
-    { label: "3: Level 3", x: 300 },
-    { label: "W: Win", x: 400 },
+  let buttonLabels = [
+    "S: Start",
+    "1: Level 1",
+    "2: Level 2",
+    "3: Level 3",
+    "W: Win",
+    "O: Over",
   ];
+  let buttonW = 88;
+  let gap = 8;
+  let totalButtonsW =
+    buttonLabels.length * buttonW + (buttonLabels.length - 1) * gap;
+  let startX = (width - totalButtonsW) / 2;
+
+  let buttons = buttonLabels.map((label, i) => {
+    return { label: label, x: startX + i * (buttonW + gap) };
+  });
 
   for (let i = 0; i < buttons.length; i++) {
     let b = buttons[i];
@@ -472,7 +484,7 @@ function drawDebugPanel() {
     fill(60, 60, 90);
     stroke(100, 100, 140);
     strokeWeight(1);
-    rect(b.x, height - 50, 88, 34, 4);
+    rect(b.x, height - 50, buttonW, 34, 4);
 
     fill(200);
     noStroke();
@@ -589,6 +601,11 @@ function keyPressed() {
   if (key === "3") {
     loadLevel(3);
     gameState = STATE_PLAY;
+  }
+
+  if (key === "o" || key === "O") {
+    gameState = STATE_OVER;
+    return;
   }
 }
 
